@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glass Price Calculator</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">GLASS ESTIMATE</div>
+        <h1 id="brandName">GLASS CARE ENTERPRISES</h1>
+        <p id="brandSub">Fast glass pricing & professional estimates</p>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-light" id="settingsBtn">⚙ Company</button>
+        <button class="btn btn-primary" id="printBtn">🖨 Print Estimate</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="card calculator-card">
+        <div class="section-heading">
+          <div>
+            <h2>Add Glass / Item</h2>
+            <p>Select the item, enter measurement, then add it to the estimate.</p>
+          </div>
+          <span class="item-count" id="itemCount">0 items</span>
+        </div>
+
+        <div class="form-grid">
+          <label>
+            <span>Type / Category</span>
+            <select id="categorySelect"></select>
+          </label>
+
+          <label>
+            <span>Thickness</span>
+            <select id="thicknessSelect"></select>
+          </label>
+
+          <label class="wide">
+            <span>Glass / Product</span>
+            <select id="productSelect"></select>
+          </label>
+
+          <label id="heightField">
+            <span>Height</span>
+            <input id="heightInput" type="number" min="0" step="0.01" placeholder="e.g. 72" />
+          </label>
+
+          <label id="widthField">
+            <span>Width</span>
+            <input id="widthInput" type="number" min="0" step="0.01" placeholder="e.g. 36" />
+          </label>
+
+          <label id="unitField">
+            <span>Measurement unit</span>
+            <select id="measureUnit">
+              <option value="in">Inches</option>
+              <option value="ft">Feet</option>
+            </select>
+          </label>
+
+          <label id="qtyField" class="hidden">
+            <span>Quantity</span>
+            <input id="qtyInput" type="number" min="1" step="1" value="1" />
+          </label>
+
+          <div class="rate-box">
+            <span>Rate</span>
+            <strong id="rateDisplay">—</strong>
+          </div>
+
+          <div class="amount-box">
+            <span>Calculated amount</span>
+            <strong id="amountDisplay">₹0.00</strong>
+          </div>
+        </div>
+
+        <div class="measurement-note" id="measurementNote">
+          For Sqft items: Area = Height × Width. Inches are converted to square feet automatically.
+        </div>
+
+        <div class="add-row">
+          <div class="mini-summary" id="liveSummary">Select a product to begin.</div>
+          <button class="btn btn-success" id="addBtn">＋ Add to Estimate</button>
+        </div>
+      </section>
+
+      <section class="card estimate-card">
+        <div class="section-heading">
+          <div>
+            <h2>Current Estimate</h2>
+            <p>Each added item becomes a separate row. Add as many different glass types as needed.</p>
+          </div>
+          <button class="btn btn-danger-outline" id="clearBtn">Clear All</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Glass / Item</th>
+                <th>Thickness</th>
+                <th>Size / Qty</th>
+                <th>Area</th>
+                <th>Rate</th>
+                <th>Amount</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="estimateBody">
+              <tr class="empty-row">
+                <td colspan="8">
+                  <div class="empty-state">
+                    <div class="empty-icon">▱</div>
+                    <strong>No items added yet</strong>
+                    <span>Choose a glass above and click “Add to Estimate”.</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="totals">
+          <div class="total-line grand">
+            <span>Grand Total</span>
+            <strong id="grandTotal">₹0.00</strong>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Glass Price Calculator</span>
+      <span>Rates loaded from your supplied price list • 162 unique priced entries</span>
+    </footer>
+  </div>
+
+  <!-- Company settings modal -->
+  <div class="modal-backdrop hidden" id="settingsModal">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h3>Company Details</h3>
+          <p>These details appear on the printed estimate.</p>
+        </div>
+        <button class="icon-btn" data-close="settingsModal">×</button>
+      </div>
+      <div class="modal-body">
+        <label><span>Company name</span><input id="companyNameInput" placeholder="GLASS CARE ENTERPRISES" /></label>
+        <label><span>Phone</span><input id="companyPhoneInput" placeholder="7411415842" /></label>
+        <label><span>Address</span><textarea id="companyAddressInput" rows="3" placeholder="Near Nagwara, Manyata Tech Park"></textarea></label>
+        <label><span>GSTIN (optional)</span><input id="companyGstinInput" placeholder="GSTIN" /></label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-light" data-close="settingsModal">Cancel</button>
+        <button class="btn btn-primary" id="saveSettingsBtn">Save Details</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer modal -->
+  <div class="modal-backdrop hidden" id="customerModal">
+    <div class="modal customer-modal">
+      <div class="modal-head">
+        <div>
+          <h3>Customer Details</h3>
+          <p>Enter the details that should appear on the printed estimate.</p>
+        </div>
+        <button class="icon-btn" data-close="customerModal">×</button>
+      </div>
+      <div class="modal-body">
+        <label><span>Customer name *</span><input id="customerName" placeholder="Customer name" /></label>
+        <label><span>Phone number *</span><input id="customerPhone" placeholder="Phone number" /></label>
+        <label><span>Address</span><textarea id="customerAddress" rows="3" placeholder="Customer address"></textarea></label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-light" data-close="customerModal">Cancel</button>
+        <button class="btn btn-primary" id="continuePrintBtn">Continue to Print</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print-only estimate -->
+  <section id="printArea" class="print-area"></section>
+
+  <script>
+    const PRODUCTS = [{"no": 110, "item": "Plain polished 4mm flat glass", "unit": "Sqft", "rate": 65, "category": "Plain / Basic Flat Glass", "thickness": "4"}, {"no": 111, "item": "Plain polished 5mm flat glass", "unit": "Sqft", "rate": 80, "category": "Plain / Basic Flat Glass", "thickness": "5"}, {"no": 112, "item": "Plain polished 6mm flat glass", "unit": "Sqft", "rate": 98, "category": "Plain / Basic Flat Glass", "thickness": "6"}, {"no": 113, "item": "Plain polished 8mm flat glass", "unit": "Sqft", "rate": 115, "category": "Plain / Basic Flat Glass", "thickness": "8"}, {"no": 114, "item": "Polished 6mm plain flat glass", "unit": "Sqft", "rate": 120, "category": "Plain / Basic Flat Glass", "thickness": "6"}, {"no": 108, "item": "Plain polished 10mm flat glass", "unit": "Sqft", "rate": 140, "category": "Plain / Basic Flat Glass", "thickness": "10"}, {"no": 109, "item": "Plain polished 12mm flat glass", "unit": "Sqft", "rate": 150, "category": "Plain / Basic Flat Glass", "thickness": "12"}, {"no": 21, "item": "Bevelled edge polished 5mm flat glass", "unit": "Sqft", "rate": 135, "category": "Bevelled / Beveled Glass", "thickness": "5"}, {"no": 22, "item": "Bevelled edge polished 6mm flat glass", "unit": "Sqft", "rate": 155, "category": "Bevelled / Beveled Glass", "thickness": "6"}, {"no": 23, "item": "Bevelled edge polished 8mm flat glass", "unit": "Sqft", "rate": 185, "category": "Bevelled / Beveled Glass", "thickness": "8"}, {"no": 19, "item": "Bevelled edge polished 10mm flat glass", "unit": "Sqft", "rate": 195, "category": "Bevelled / Beveled Glass", "thickness": "10"}, {"no": 20, "item": "Bevelled edge polished 12mm flat glass", "unit": "Sqft", "rate": 210, "category": "Bevelled / Beveled Glass", "thickness": "12"}, {"no": 17, "item": "Beveled polished design 6mm flat glass", "unit": "Sqft", "rate": 600, "category": "Bevelled / Beveled Glass", "thickness": "6"}, {"no": 18, "item": "Beveled polished plain 8mm flat glass", "unit": "Sqft", "rate": 650, "category": "Bevelled / Beveled Glass", "thickness": "8"}, {"no": 26, "item": "Border design 6mm flat glass", "unit": "Sqft", "rate": 140, "category": "Border / Box / C-Polished / Stripe Designs", "thickness": "6"}, {"no": 27, "item": "Border design 6mm flat glass", "unit": "Sqft", "rate": 155, "category": "Border / Box / C-Polished / Stripe Designs", "thickness": "6"}, {"no": 28, "item": "Border design 8mm flat glass", "unit": "Sqft", "rate": 160, "category": "Border / Box / C-Polished / Stripe Designs", "thickness": "8"}, {"no": 24, "item": "Border design 10mm flat glass", "unit": "Sqft", "rate": 180, "category": "Border / Box / C-Polished / Stripe Designs", "thickness": "10"}, {"no": 25, "item": "Border design 12mm flat glass", "unit": "Sqft", "rate": 195, "category": "Border / Box / C-Polished / Stripe Designs", "thickness": "12"}, {"no": 29, "item": "Border design color 6mm flat glass", "unit": "Sqft", "rate": 220, "category": "Border / Box / C-Polished / Stripe Designs", "thickness": "6"}, {"no": 30, "item": "Box design color 6mm flat glass", "unit": "Sqft", "rate": 310, "category": "Border / Box / C-Polished / Stripe Designs", "thickness": "6"}, {"no": 31, "item": "C half polished 10mm flat glass", "unit": "Sqft", "rate": 260, "category": "Border / Box / C-Polished / Stripe Designs", "thickness": "10"}, {"no": 32, "item": "C polished plain 10mm flat glass", "unit": "Sqft", "rate": 330, "category": "Border / Box / C-Polished / Stripe Designs", "thickness": "10"}, {"no": 146, "item": "Stripes line etching 6mm flat glass", "unit": "Sqft", "rate": 130, "category": "Border / Box / C-Polished / Stripe Designs", "thickness": "6"}, {"no": 10, "item": "Balcony etching color, acid texture & clusters, 10mm flat toughened design glass", "unit": "Sqft", "rate": 1150, "category": "Balcony Glass", "thickness": "10"}, {"no": 11, "item": "Balcony etching color, acid texture, 10mm flat toughened design glass", "unit": "Sqft", "rate": 1050, "category": "Balcony Glass", "thickness": "10"}, {"no": 12, "item": "Balcony etching color, acid texture, 10mm flat toughened design glass", "unit": "Sqft", "rate": 750, "category": "Balcony Glass", "thickness": "10"}, {"no": 13, "item": "Balcony plain 10mm flat toughened design glass with holes", "unit": "Sqft", "rate": 850, "category": "Balcony Glass", "thickness": "10"}, {"no": 14, "item": "Balcony plain 10mm flat toughened etching design glass", "unit": "Sqft", "rate": 720, "category": "Balcony Glass", "thickness": "10"}, {"no": 15, "item": "Balcony wall railing stainless steel studs hardware", "unit": "Pcs", "rate": 340, "category": "Balcony Glass", "thickness": ""}, {"no": 56, "item": "Extra clear 10mm toughened glass", "unit": "Sqft", "rate": 390, "category": "Toughened / Extra Clear Glass", "thickness": "10"}, {"no": 57, "item": "Extra clear 12mm toughened glass", "unit": "Sqft", "rate": 445, "category": "Toughened / Extra Clear Glass", "thickness": "12"}, {"no": 62, "item": "Frosted design 6mm flat glass", "unit": "Sqft", "rate": 185, "category": "Frosted Glass", "thickness": "6"}, {"no": 63, "item": "Frosted design 8mm flat glass", "unit": "Sqft", "rate": 195, "category": "Frosted Glass", "thickness": "8"}, {"no": 60, "item": "Frosted design 10mm flat glass", "unit": "Sqft", "rate": 240, "category": "Frosted Glass", "thickness": "10"}, {"no": 61, "item": "Frosted design 12mm flat glass", "unit": "Sqft", "rate": 265, "category": "Frosted Glass", "thickness": "12"}, {"no": 153, "item": "Tinted glass 5mm", "unit": "Sqft", "rate": 95, "category": "Tinted Glass", "thickness": "5"}, {"no": 154, "item": "Tinted glass 6mm", "unit": "Sqft", "rate": 125, "category": "Tinted Glass", "thickness": "6"}, {"no": 155, "item": "Tinted glass 8mm", "unit": "Sqft", "rate": 185, "category": "Tinted Glass", "thickness": "8"}, {"no": 152, "item": "Tinted glass 10mm", "unit": "Sqft", "rate": 240, "category": "Tinted Glass", "thickness": "10"}, {"no": 85, "item": "Laminated 5+5mm plain glass", "unit": "Sqft", "rate": 320, "category": "Laminated Glass", "thickness": "5+5"}, {"no": 86, "item": "Laminated 6+6mm plain glass", "unit": "Sqft", "rate": 355, "category": "Laminated Glass", "thickness": "6+6"}, {"no": 87, "item": "Laminated 8+8mm plain glass", "unit": "Sqft", "rate": 380, "category": "Laminated Glass", "thickness": "8+8"}, {"no": 16, "item": "Bar unit glass floor 12+12mm toughened laminated flat glass work", "unit": "Sqft", "rate": 2600, "category": "Laminated Glass", "thickness": "12+12"}, {"no": 59, "item": "Flooring area 10+10mm toughened laminated glass work", "unit": "Sqft", "rate": 900, "category": "Laminated Glass", "thickness": "10+10"}, {"no": 132, "item": "Stained 4mm & 6mm toughened sandwich glass work", "unit": "Sqft", "rate": 1600, "category": "Laminated Glass", "thickness": "4 / 6"}, {"no": 133, "item": "Stained glass work", "unit": "Sqft", "rate": 1650, "category": "Laminated Glass", "thickness": ""}, {"no": 37, "item": "Center etching color design 6mm flat glass", "unit": "Sqft", "rate": 270, "category": "Etching / Decorative / Acid Texture", "thickness": "6"}, {"no": 39, "item": "Center etching design 6mm flat glass", "unit": "Sqft", "rate": 270, "category": "Etching / Decorative / Acid Texture", "thickness": "6"}, {"no": 38, "item": "Center etching color lord design 6mm flat glass", "unit": "Sqft", "rate": 540, "category": "Etching / Decorative / Acid Texture", "thickness": "6"}, {"no": 40, "item": "Center etching lord design 6mm flat glass", "unit": "Sqft", "rate": 440, "category": "Etching / Decorative / Acid Texture", "thickness": "6"}, {"no": 41, "item": "Center etching lord design color & acid texture 6mm flat glass", "unit": "Sqft", "rate": 700, "category": "Etching / Decorative / Acid Texture", "thickness": "6"}, {"no": 42, "item": "Center multiplayer deep etching design color, acid texture 8mm flat glass", "unit": "Sqft", "rate": 920, "category": "Etching / Decorative / Acid Texture", "thickness": "8"}, {"no": 44, "item": "Corner etching color design 6mm flat glass", "unit": "Sqft", "rate": 390, "category": "Etching / Decorative / Acid Texture", "thickness": "6"}, {"no": 45, "item": "Corner etching design 6mm flat glass", "unit": "Sqft", "rate": 160, "category": "Etching / Decorative / Acid Texture", "thickness": "6"}, {"no": 46, "item": "Digital HD print design 8mm flat glass", "unit": "Sqft", "rate": 490, "category": "Etching / Decorative / Acid Texture", "thickness": "8"}, {"no": 36, "item": "Ceiling design color & acid texture 6mm flat glass", "unit": "Sqft", "rate": 760, "category": "Etching / Decorative / Acid Texture", "thickness": "6"}, {"no": 58, "item": "False ceiling design color & acid texture 6mm flat glass", "unit": "Sqft", "rate": 380, "category": "Etching / Decorative / Acid Texture", "thickness": "6"}, {"no": 119, "item": "Round ceiling design etching 6mm flat tough glass", "unit": "Sqft", "rate": 380, "category": "Etching / Decorative / Acid Texture", "thickness": "6"}, {"no": 120, "item": "Round ceiling design etching color & acid texture 6mm flat tough glass", "unit": "Sqft", "rate": 640, "category": "Etching / Decorative / Acid Texture", "thickness": "6"}, {"no": 90, "item": "Lord figure etching design 6mm flat glass", "unit": "Sqft", "rate": 450, "category": "Lord / Religious Designs", "thickness": "6"}, {"no": 88, "item": "Lord figure etching color acid texture design 6mm flat glass", "unit": "Sqft", "rate": 600, "category": "Lord / Religious Designs", "thickness": "6"}, {"no": 89, "item": "Lord figure etching color design 6mm flat glass", "unit": "Sqft", "rate": 750, "category": "Lord / Religious Designs", "thickness": "6"}, {"no": 91, "item": "Lord figure multilayer deep etching lord design color, acid texture 8mm flat glass", "unit": "Sqft", "rate": 860, "category": "Lord / Religious Designs", "thickness": "8"}, {"no": 81, "item": "Lacquered glass 4mm with polished edges", "unit": "Sqft", "rate": 390, "category": "Lacquered Glass", "thickness": "4"}, {"no": 82, "item": "Lacquered glass 5mm with polished edges", "unit": "Sqft", "rate": 440, "category": "Lacquered Glass", "thickness": "5"}, {"no": 83, "item": "Lacquered glass 6mm with polished edges", "unit": "Sqft", "rate": 520, "category": "Lacquered Glass", "thickness": "6"}, {"no": 84, "item": "Lacquered plain 6mm flat glass", "unit": "Sqft", "rate": 420, "category": "Lacquered Glass", "thickness": "6"}, {"no": 80, "item": "Lacquered decorative design 6mm flat tough glass", "unit": "Sqft", "rate": 480, "category": "Lacquered Glass", "thickness": "6"}, {"no": 121, "item": "Saint Gobain original lacquered 6mm flat glass", "unit": "Sqft", "rate": 1450, "category": "Lacquered Glass", "thickness": "6"}, {"no": 122, "item": "Saint Gobain original lacquered decorative design 6mm flat glass", "unit": "Sqft", "rate": 490, "category": "Lacquered Glass", "thickness": "6"}, {"no": 77, "item": "Kitchen unit shutters beveled polished design 6mm flat glass", "unit": "Sqft", "rate": 370, "category": "Kitchen Shutters", "thickness": "6"}, {"no": 78, "item": "Kitchen unit shutters beveled polished design 6mm tough flat glass", "unit": "Sqft", "rate": 180, "category": "Kitchen Shutters", "thickness": "6"}, {"no": 76, "item": "Kitchen shutters V groove, etching color, acid texture 6mm toughened flat design glass", "unit": "Sqft", "rate": 570, "category": "Kitchen Shutters", "thickness": "6"}, {"no": 79, "item": "Kitchen unit shutters lacquered decorative design 6mm flat tough glass", "unit": "Sqft", "rate": 450, "category": "Kitchen Shutters", "thickness": "6"}, {"no": 53, "item": "Door plain polished tough 10mm flat glass", "unit": "Sqft", "rate": 220, "category": "Door Glass", "thickness": "10"}, {"no": 47, "item": "Door etching design 10mm flat tough glass with installation, hardware", "unit": "Sqft", "rate": 775, "category": "Door Glass", "thickness": "10"}, {"no": 48, "item": "Door etching design 12mm flat tough glass with installation, hardware", "unit": "Sqft", "rate": 925, "category": "Door Glass", "thickness": "12"}, {"no": 49, "item": "Door frosted design 8mm flat tough glass with installation, hardware", "unit": "Sqft", "rate": 725, "category": "Door Glass", "thickness": "8"}, {"no": 50, "item": "Door plain polished 10mm flat tough glass with installation, hardware", "unit": "Sqft", "rate": 650, "category": "Door Glass", "thickness": "10"}, {"no": 51, "item": "Door plain polished 10mm flat tough glass with installation, hardware", "unit": "Sqft", "rate": 620, "category": "Door Glass", "thickness": "10"}, {"no": 52, "item": "Door plain polished 12mm flat tough glass with installation, hardware", "unit": "Sqft", "rate": 675, "category": "Door Glass", "thickness": "12"}, {"no": 54, "item": "Door side fixed partition 10mm flat toughened design glass", "unit": "Sqft", "rate": 240, "category": "Door Glass", "thickness": "10"}, {"no": 55, "item": "Door side fixed partition 10mm flat toughened plain glass with installation, hardware", "unit": "Sqft", "rate": 360, "category": "Door Glass", "thickness": "10"}, {"no": 92, "item": "Main door 10mm tough polished antique glass, etching design, color, acid texture & clusters with installation, hardware", "unit": "Sqft", "rate": 1200, "category": "Main Door / Pooja Door", "thickness": "10"}, {"no": 93, "item": "Main Door plain polished tough 10mm flat glass with installation, hardware", "unit": "Sqft", "rate": 630, "category": "Main Door / Pooja Door", "thickness": "10"}, {"no": 115, "item": "Pooja Door 10mm flat polished tough design glass, etching color, acid texture", "unit": "Sqft", "rate": 1200, "category": "Main Door / Pooja Door", "thickness": "10"}, {"no": 116, "item": "Pooja Door plain polished tough 10mm flat glass", "unit": "Sqft", "rate": 350, "category": "Main Door / Pooja Door", "thickness": "10"}, {"no": 117, "item": "Pooja fixed partition polished 10mm flat glass", "unit": "Sqft", "rate": 440, "category": "Main Door / Pooja Door", "thickness": "10"}, {"no": 118, "item": "Pooja partition hollow design etching color, acid texture polished 6mm flat glass", "unit": "Sqft", "rate": 2700, "category": "Main Door / Pooja Door", "thickness": "6"}, {"no": 94, "item": "Mirror 5mm with polished edges", "unit": "Sqft", "rate": 145, "category": "Mirror", "thickness": "5"}, {"no": 95, "item": "Mirror 6mm with polished edges", "unit": "Sqft", "rate": 165, "category": "Mirror", "thickness": "6"}, {"no": 101, "item": "Mirror polished 6mm flat glass", "unit": "Sqft", "rate": 170, "category": "Mirror", "thickness": "6"}, {"no": 96, "item": "Mirror beveled polished 6mm flat glass", "unit": "Sqft", "rate": 180, "category": "Mirror", "thickness": "6"}, {"no": 97, "item": "Mirror beveled polished design 6mm flat glass", "unit": "Sqft", "rate": 320, "category": "Mirror", "thickness": "6"}, {"no": 99, "item": "Mirror border etching design, color 6mm flat glass", "unit": "Sqft", "rate": 330, "category": "Mirror", "thickness": "6"}, {"no": 100, "item": "Mirror design colors 6mm flat glass", "unit": "Sqft", "rate": 390, "category": "Mirror", "thickness": "6"}, {"no": 103, "item": "Mirror sensor lighting 6mm flat bathroom & living area glass", "unit": "Sqft", "rate": 540, "category": "Mirror", "thickness": "6"}, {"no": 98, "item": "Mirror beveled sensor lighting 6mm flat bathroom & living area glass", "unit": "Sqft", "rate": 560, "category": "Mirror", "thickness": "6"}, {"no": 102, "item": "Mirror polished antique glass etching design, color, acid texture & clusters", "unit": "Sqft", "rate": 780, "category": "Mirror", "thickness": ""}, {"no": 106, "item": "Partition 10mm toughened glass with installation, hardware", "unit": "Sqft", "rate": 475, "category": "Partition", "thickness": "10"}, {"no": 107, "item": "Partition 12mm toughened glass with installation, hardware", "unit": "Sqft", "rate": 510, "category": "Partition", "thickness": "12"}, {"no": 124, "item": "Shower cubicle polished 8mm flat tough glass with installation & hardware", "unit": "Sqft", "rate": 560, "category": "Shower", "thickness": "8"}, {"no": 123, "item": "Shower cubicle polished 10mm flat tough glass & installation only", "unit": "Sqft", "rate": 640, "category": "Shower", "thickness": "10"}, {"no": 125, "item": "Shower enclosure 10mm toughened glass with hardware", "unit": "Sqft", "rate": 675, "category": "Shower", "thickness": "10"}, {"no": 126, "item": "Shower enclosure 12mm toughened glass with hardware", "unit": "Sqft", "rate": 700, "category": "Shower", "thickness": "12"}, {"no": 127, "item": "Skylight 10mm plain toughened flat glass", "unit": "Sqft", "rate": 340, "category": "Skylight / Canopy", "thickness": "10"}, {"no": 128, "item": "Skylight 10mm toughened flat design glass, etching color, acid texture", "unit": "Sqft", "rate": 1300, "category": "Skylight / Canopy", "thickness": "10"}, {"no": 35, "item": "Canopy 10mm flat toughened plain glass with installation, hardware", "unit": "Sqft", "rate": 620, "category": "Skylight / Canopy", "thickness": "10"}, {"no": 34, "item": "Canopy 10mm flat toughened design glass with installation, hardware", "unit": "Sqft", "rate": 980, "category": "Skylight / Canopy", "thickness": "10"}, {"no": 64, "item": "Glass box/cabinets plain polished tough 10mm flat glass", "unit": "Sqft", "rate": 380, "category": "Glass Cabinets / Box", "thickness": "10"}, {"no": 65, "item": "Glass cabinets V groove, etching color, acid texture polished tough 10mm flat glass", "unit": "Sqft", "rate": 780, "category": "Glass Cabinets / Box", "thickness": "10"}, {"no": 73, "item": "Hall area plain 6mm flat tough glass", "unit": "Sqft", "rate": 220, "category": "Wall / Hall / TV Unit", "thickness": "6"}, {"no": 72, "item": "Hall area decorative design 6mm design flat tough glass", "unit": "Sqft", "rate": 380, "category": "Wall / Hall / TV Unit", "thickness": "6"}, {"no": 71, "item": "Hall area decorative design 6mm bronze flat tough glass", "unit": "Sqft", "rate": 540, "category": "Wall / Hall / TV Unit", "thickness": "6"}, {"no": 168, "item": "Wall area decorative design 6mm flat tough glass", "unit": "Sqft", "rate": 520, "category": "Wall / Hall / TV Unit", "thickness": "6"}, {"no": 167, "item": "Wall area decorative design 6mm bronze flat tough glass", "unit": "Sqft", "rate": 550, "category": "Wall / Hall / TV Unit", "thickness": "6"}, {"no": 169, "item": "Wall unit lacquered decorative design 6mm flat tough glass", "unit": "Sqft", "rate": 700, "category": "Wall / Hall / TV Unit", "thickness": "6"}, {"no": 157, "item": "TV unit decorative design 6mm flat tough glass", "unit": "Sqft", "rate": 260, "category": "Wall / Hall / TV Unit", "thickness": "6"}, {"no": 156, "item": "TV unit decorative design 10mm flat tough glass", "unit": "Sqft", "rate": 480, "category": "Wall / Hall / TV Unit", "thickness": "10"}, {"no": 137, "item": "Staircase railing 10mm toughened glass", "unit": "Sqft", "rate": 270, "category": "Staircase / Railing", "thickness": "10"}, {"no": 139, "item": "Staircase railing 12mm toughened glass", "unit": "Sqft", "rate": 295, "category": "Staircase / Railing", "thickness": "12"}, {"no": 134, "item": "Staircase railing 10mm flat toughened plain glass", "unit": "Sqft", "rate": 340, "category": "Staircase / Railing", "thickness": "10"}, {"no": 135, "item": "Staircase railing 10mm toughened design glass", "unit": "Sqft", "rate": 460, "category": "Staircase / Railing", "thickness": "10"}, {"no": 138, "item": "Staircase railing 12mm toughened design glass", "unit": "Sqft", "rate": 495, "category": "Staircase / Railing", "thickness": "12"}, {"no": 136, "item": "Staircase railing 10mm toughened flat design glass, etching color, acid texture", "unit": "Sqft", "rate": 1330, "category": "Staircase / Railing", "thickness": "10"}, {"no": 140, "item": "Staircase stainless steel studs anodized color", "unit": "Pcs", "rate": 440, "category": "Staircase / Railing", "thickness": ""}, {"no": 141, "item": "Staircase steps stainless steel studs hardware", "unit": "Pcs", "rate": 340, "category": "Staircase / Railing", "thickness": ""}, {"no": 143, "item": "Staircase wall area decorative design 6mm flat tough glass", "unit": "Sqft", "rate": 540, "category": "Staircase Wall / Steps", "thickness": "6"}, {"no": 142, "item": "Staircase wall area decorative design 6mm bronze flat tough glass", "unit": "Sqft", "rate": 680, "category": "Staircase Wall / Steps", "thickness": "6"}, {"no": 144, "item": "Steps chipped shine 12mm flat plain glass", "unit": "Sqft", "rate": 650, "category": "Staircase Wall / Steps", "thickness": "12"}, {"no": 145, "item": "Steps zigzag shine 12mm flat plain glass", "unit": "Sqft", "rate": 1050, "category": "Staircase Wall / Steps", "thickness": "12"}, {"no": 149, "item": "Table top polished 10mm flat plain glass", "unit": "Sqft", "rate": 300, "category": "Table Top", "thickness": "10"}, {"no": 147, "item": "Table top 10mm toughened glass", "unit": "Sqft", "rate": 400, "category": "Table Top", "thickness": "10"}, {"no": 148, "item": "Table top 12mm toughened glass", "unit": "Sqft", "rate": 430, "category": "Table Top", "thickness": "12"}, {"no": 150, "item": "Table top taper & polished 10mm flat plain glass", "unit": "Sqft", "rate": 430, "category": "Table Top", "thickness": "10"}, {"no": 151, "item": "Taper polished 6mm flat plain glass", "unit": "Sqft", "rate": 170, "category": "Table Top", "thickness": "6"}, {"no": 163, "item": "Ultra white polished plain 6mm flat glass", "unit": "Sqft", "rate": 520, "category": "Ultra White Glass", "thickness": "6"}, {"no": 162, "item": "Ultra white polished plain 10mm flat glass", "unit": "Sqft", "rate": 630, "category": "Ultra White Glass", "thickness": "10"}, {"no": 159, "item": "Ultra white lacquered 6mm flat glass", "unit": "Sqft", "rate": 680, "category": "Ultra White Glass", "thickness": "6"}, {"no": 164, "item": "Ultra white taper polished 10mm flat plain glass", "unit": "Sqft", "rate": 770, "category": "Ultra White Glass", "thickness": "10"}, {"no": 160, "item": "Ultra white lacquered decorative design 6mm flat tough glass", "unit": "Sqft", "rate": 960, "category": "Ultra White Glass", "thickness": "6"}, {"no": 161, "item": "Ultra white polished 6mm flat design glass, etching color, acid texture", "unit": "Sqft", "rate": 1180, "category": "Ultra White Glass", "thickness": "6"}, {"no": 158, "item": "Ultra white 10mm toughened flat design glass, etching color, acid texture", "unit": "Sqft", "rate": 1440, "category": "Ultra White Glass", "thickness": "10"}, {"no": 166, "item": "Vector glass pattern decorative design 10mm flat tough glass", "unit": "Sqft", "rate": 470, "category": "V-Groove / Vector / Decorative", "thickness": "10"}, {"no": 165, "item": "V groove, etching color, acid texture 10mm toughened flat design glass", "unit": "Sqft", "rate": 1600, "category": "V-Groove / Vector / Decorative", "thickness": "10"}, {"no": 33, "item": "Calming glass pattern decorative design 10mm flat tough glass", "unit": "Sqft", "rate": 920, "category": "V-Groove / Vector / Decorative", "thickness": "10"}, {"no": 67, "item": "Glass mural design antique decorative etching design, color, acid texture & clusters 8mm flat tough glass", "unit": "Sqft", "rate": 1350, "category": "V-Groove / Vector / Decorative", "thickness": "8"}, {"no": 170, "item": "Wardrobe 6mm toughened flat design glass, etching color, acid texture", "unit": "Sqft", "rate": 430, "category": "Wardrobe", "thickness": "6"}, {"no": 171, "item": "Wardrobe lacquered decorative design 6mm flat tough glass", "unit": "Sqft", "rate": 560, "category": "Wardrobe", "thickness": "6"}, {"no": 104, "item": "Name plates etching color, acid texture 10mm toughened flat design glass", "unit": "Sqft", "rate": 550, "category": "Name Plates", "thickness": "10"}, {"no": 105, "item": "Name plates stained 4mm & 6mm toughened sandwich glass work with holes", "unit": "Pcs", "rate": 1000, "category": "Name Plates", "thickness": "4 / 6"}, {"no": 129, "item": "Spider fittings polished 10mm flat tough glasses with installation, hardware", "unit": "Pcs", "rate": 1150, "category": "Spider Fittings", "thickness": "10"}, {"no": 130, "item": "Spider fittings polished 12mm flat tough glasses with installation, hardware", "unit": "Pcs", "rate": 1350, "category": "Spider Fittings", "thickness": "12"}, {"no": 131, "item": "Spider fittings polished 12mm flat tough glasses with installation, hardware", "unit": "Pcs", "rate": 1440, "category": "Spider Fittings", "thickness": "12"}, {"no": 68, "item": "Glass to Glass fittings", "unit": "Pcs", "rate": 285, "category": "Other Fittings / Charges", "thickness": ""}, {"no": 69, "item": "Glass to Wall fittings", "unit": "Pcs", "rate": 240, "category": "Other Fittings / Charges", "thickness": ""}, {"no": 75, "item": "Hole cutting charges", "unit": "Pcs", "rate": 120, "category": "Other Fittings / Charges", "thickness": ""}, {"no": 43, "item": "CNC cutting charges", "unit": "Job", "rate": 145, "category": "Other Fittings / Charges", "thickness": ""}, {"no": 74, "item": "Handling & Fixing charges", "unit": "Job", "rate": 95, "category": "Other Fittings / Charges", "thickness": ""}, {"no": 66, "item": "Glass film installation", "unit": "Sqft", "rate": 125, "category": "Other Fittings / Charges", "thickness": ""}, {"no": 70, "item": "Glazing one-way vision 4mm flat glass", "unit": "Sqft", "rate": 240, "category": "Special Decorative Glass", "thickness": "4"}];
+
+    let estimate = [];
+    let company = JSON.parse(localStorage.getItem("glassCompany") || "null") || {
+      name: "GLASS CARE ENTERPRISES",
+      phone: "7411415842",
+      address: "Near Nagwara, Manyata Tech Park",
+      gstin: ""
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function money(n) {
+      return new Intl.NumberFormat("en-IN", {
+        style: "currency", currency: "INR", maximumFractionDigits: 2
+      }).format(Number(n) || 0);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, ch => ({
+        "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+      }[ch]));
+    }
+
+    function uniqueSorted(values) {
+      return [...new Set(values.filter(Boolean))].sort((a,b) =>
+        String(a).localeCompare(String(b), undefined, {numeric:true})
+      );
+    }
+
+    function initFilters() {
+      const categories = uniqueSorted(PRODUCTS.map(p => p.category));
+      $("categorySelect").innerHTML =
+        '<option value="">All categories</option>' +
+        categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+
+      updateThicknesses();
+      updateProducts();
+    }
+
+    function updateThicknesses() {
+      const category = $("categorySelect").value;
+      const source = PRODUCTS.filter(p => !category || p.category === category);
+      const thicknesses = uniqueSorted(source.map(p => p.thickness));
+      $("thicknessSelect").innerHTML =
+        '<option value="">All thicknesses</option>' +
+        thicknesses.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)} mm</option>`).join("");
+    }
+
+    function updateProducts() {
+      const category = $("categorySelect").value;
+      const thickness = $("thicknessSelect").value;
+
+      const list = PRODUCTS.filter(p =>
+        (!category || p.category === category) &&
+        (!thickness || p.thickness === thickness)
+      );
+
+      $("productSelect").innerHTML =
+        '<option value="">Select glass / product...</option>' +
+        list.map(p =>
+          `<option value="${p.no}">No. ${p.no} — ${escapeHtml(p.item)} — ${money(p.rate)}/${p.unit}</option>`
+        ).join("");
+
+      if (list.length === 1) {
+        $("productSelect").value = String(list[0].no);
+      }
+      updateProductInfo();
+    }
+
+    function getProduct() {
+      const no = Number($("productSelect").value);
+      return PRODUCTS.find(p => p.no === no) || null;
+    }
+
+    function updateProductInfo() {
+      const p = getProduct();
+      $("rateDisplay").textContent = p ? `${money(p.rate)} / ${p.unit}` : "—";
+
+      const sqft = p?.unit === "Sqft";
+      $("heightField").classList.toggle("hidden", !sqft);
+      $("widthField").classList.toggle("hidden", !sqft);
+      $("unitField").classList.toggle("hidden", !sqft);
+      $("qtyField").classList.toggle("hidden", sqft);
+
+      if (!p) {
+        $("amountDisplay").textContent = "₹0.00";
+        $("liveSummary").textContent = "Select a product to begin.";
+        return;
+      }
+
+      calculateLive();
+    }
+
+    function calculateLive() {
+      const p = getProduct();
+      if (!p) return;
+
+      let amount = 0;
+      let summary = "";
+
+      if (p.unit === "Sqft") {
+        const h = Number($("heightInput").value) || 0;
+        const w = Number($("widthInput").value) || 0;
+        const unit = $("measureUnit").value;
+        const area = unit === "in" ? (h * w) / 144 : h * w;
+        amount = area * p.rate;
+        summary = h && w
+          ? `${h} × ${w} ${unit === "in" ? "in" : "ft"} = ${area.toFixed(2)} sqft`
+          : "Enter height and width.";
+      } else {
+        const qty = Number($("qtyInput").value) || 0;
+        amount = qty * p.rate;
+        summary = `${qty} ${p.unit}`;
+      }
+
+      $("amountDisplay").textContent = money(amount);
+      $("liveSummary").textContent = `${p.item} • ${summary} • ${money(amount)}`;
+    }
+
+    function addItem() {
+      const p = getProduct();
+      if (!p) return alert("Please select a glass / product.");
+
+      let entry = {
+        ...p,
+        height: "",
+        width: "",
+        measureUnit: "in",
+        qty: 1,
+        area: 0,
+        amount: 0
+      };
+
+      if (p.unit === "Sqft") {
+        const h = Number($("heightInput").value);
+        const w = Number($("widthInput").value);
+        if (!(h > 0) || !(w > 0)) return alert("Please enter a valid height and width.");
+        const unit = $("measureUnit").value;
+        const area = unit === "in" ? (h * w) / 144 : h * w;
+        entry.height = h;
+        entry.width = w;
+        entry.measureUnit = unit;
+        entry.area = area;
+        entry.amount = area * p.rate;
+      } else {
+        const qty = Number($("qtyInput").value);
+        if (!(qty > 0)) return alert("Please enter a valid quantity.");
+        entry.qty = qty;
+        entry.amount = qty * p.rate;
+      }
+
+      estimate.push(entry);
+      renderEstimate();
+    }
+
+    function removeItem(index) {
+      estimate.splice(index, 1);
+      renderEstimate();
+    }
+
+    function renderEstimate() {
+      $("itemCount").textContent = `${estimate.length} item${estimate.length === 1 ? "" : "s"}`;
+      const body = $("estimateBody");
+
+      if (!estimate.length) {
+        body.innerHTML = `
+          <tr class="empty-row"><td colspan="8">
+            <div class="empty-state">
+              <div class="empty-icon">▱</div>
+              <strong>No items added yet</strong>
+              <span>Choose a glass above and click “Add to Estimate”.</span>
+            </div>
+          </td></tr>`;
+        $("grandTotal").textContent = money(0);
+        return;
+      }
+
+      let total = 0;
+      body.innerHTML = estimate.map((x, i) => {
+        total += x.amount;
+        const size = x.unit === "Sqft"
+          ? `${x.height} × ${x.width} ${x.measureUnit}`
+          : `${x.qty} ${x.unit}`;
+        const area = x.unit === "Sqft" ? `${x.area.toFixed(2)} sqft` : "—";
+        return `
+          <tr>
+            <td class="muted">${i + 1}</td>
+            <td>
+              <strong>${escapeHtml(x.item)}</strong>
+              <small>${escapeHtml(x.category)} • No. ${x.no}</small>
+            </td>
+            <td>${x.thickness ? escapeHtml(x.thickness) + " mm" : "—"}</td>
+            <td>${escapeHtml(size)}</td>
+            <td>${area}</td>
+            <td>${money(x.rate)} / ${x.unit}</td>
+            <td><strong>${money(x.amount)}</strong></td>
+            <td><button class="remove-btn" onclick="removeItem(${i})" title="Remove">×</button></td>
+          </tr>`;
+      }).join("");
+
+      $("grandTotal").textContent = money(total);
+    }
+
+    function openModal(id) {
+      $(id).classList.remove("hidden");
+    }
+    function closeModal(id) {
+      $(id).classList.add("hidden");
+    }
+
+    function loadCompanyUI() {
+      $("brandName").textContent = company.name || "GLASS CARE ENTERPRISES";
+      $("brandSub").textContent = company.phone
+        ? `${company.phone} • Professional glass estimates`
+        : "Fast glass pricing & professional estimates";
+      $("companyNameInput").value = company.name || "";
+      $("companyPhoneInput").value = company.phone || "";
+      $("companyAddressInput").value = company.address || "";
+      $("companyGstinInput").value = company.gstin || "";
+    }
+
+    function saveCompany() {
+      company = {
+        name: $("companyNameInput").value.trim() || "YOUR GLASS COMPANY",
+        phone: $("companyPhoneInput").value.trim(),
+        address: $("companyAddressInput").value.trim(),
+        gstin: $("companyGstinInput").value.trim()
+      };
+      localStorage.setItem("glassCompany", JSON.stringify(company));
+      loadCompanyUI();
+      closeModal("settingsModal");
+    }
+
+    function buildPrint(customer) {
+      const estimateNo = "EST-" + new Date().toISOString().slice(0,10).replaceAll("-","") + "-" +
+        String(Date.now()).slice(-4);
+      const date = new Date().toLocaleDateString("en-IN", {
+        day:"2-digit", month:"short", year:"numeric"
+      });
+
+      let total = estimate.reduce((s,x) => s + x.amount, 0);
+
+      const rows = estimate.map((x,i) => {
+        const size = x.unit === "Sqft"
+          ? `${x.height} × ${x.width} ${x.measureUnit}`
+          : `${x.qty} ${x.unit}`;
+        const area = x.unit === "Sqft" ? `${x.area.toFixed(2)} sqft` : "—";
+        return `
+          <tr>
+            <td>${i+1}</td>
+            <td><strong>${escapeHtml(x.item)}</strong><br><span>No. ${x.no}</span></td>
+            <td>${x.thickness ? escapeHtml(x.thickness) + " mm" : "—"}</td>
+            <td>${size}</td>
+            <td>${area}</td>
+            <td>${money(x.rate)}</td>
+            <td><strong>${money(x.amount)}</strong></td>
+          </tr>`;
+      }).join("");
+
+      $("printArea").innerHTML = `
+        <div class="print-page">
+          <div class="print-header">
+            <div>
+              <div class="print-eyebrow">GLASS ESTIMATE</div>
+              <h1>${escapeHtml(company.name)}</h1>
+              ${company.address ? `<div>${escapeHtml(company.address)}</div>` : ""}
+              ${company.phone ? `<div>Phone: ${escapeHtml(company.phone)}</div>` : ""}
+              ${company.gstin ? `<div>GSTIN: ${escapeHtml(company.gstin)}</div>` : ""}
+            </div>
+            <div class="estimate-meta">
+              <div class="meta-label">ESTIMATE</div>
+              <strong>${estimateNo}</strong>
+              <span>${date}</span>
+            </div>
+          </div>
+
+          <div class="customer-box">
+            <div>
+              <span>Customer</span>
+              <strong>${escapeHtml(customer.name)}</strong>
+            </div>
+            <div>
+              <span>Phone</span>
+              <strong>${escapeHtml(customer.phone)}</strong>
+            </div>
+            <div class="customer-address">
+              <span>Address</span>
+              <strong>${escapeHtml(customer.address || "—")}</strong>
+            </div>
+          </div>
+
+          <table class="print-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Glass / Item</th><th>Thickness</th><th>Size / Qty</th>
+                <th>Area</th><th>Rate</th><th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+
+          <div class="print-total">
+            <span>Grand Total</span>
+            <strong>${money(total)}</strong>
+          </div>
+
+          <div class="print-footer">
+            <div><strong>Thank you for your business.</strong><br>Prices are calculated from the supplied rate list and the measurements entered above.</div>
+            <div class="signature">Authorized Signature</div>
+          </div>
+        </div>`;
+    }
+
+    function printEstimate() {
+      if (!estimate.length) return alert("Please add at least one item before printing.");
+      $("customerName").value = "";
+      $("customerPhone").value = "";
+      $("customerAddress").value = "";
+      openModal("customerModal");
+      setTimeout(() => $("customerName").focus(), 50);
+    }
+
+    $("categorySelect").addEventListener("change", () => {
+      updateThicknesses();
+      updateProducts();
+    });
+    $("thicknessSelect").addEventListener("change", updateProducts);
+    $("productSelect").addEventListener("change", updateProductInfo);
+    ["heightInput","widthInput","measureUnit","qtyInput"].forEach(id => $(id).addEventListener("input", calculateLive));
+    $("measureUnit").addEventListener("change", calculateLive);
+    $("addBtn").addEventListener("click", addItem);
+    $("clearBtn").addEventListener("click", () => {
+      if (estimate.length && confirm("Clear all estimate items?")) {
+        estimate = [];
+        renderEstimate();
+      }
+    });
+    $("settingsBtn").addEventListener("click", () => {
+      loadCompanyUI();
+      openModal("settingsModal");
+    });
+    $("saveSettingsBtn").addEventListener("click", saveCompany);
+    $("printBtn").addEventListener("click", printEstimate);
+
+    $("continuePrintBtn").addEventListener("click", () => {
+      const name = $("customerName").value.trim();
+      const phone = $("customerPhone").value.trim();
+      if (!name || !phone) return alert("Customer name and phone number are required.");
+      buildPrint({
+        name,
+        phone,
+        address: $("customerAddress").value.trim()
+      });
+      closeModal("customerModal");
+      setTimeout(() => window.print(), 100);
+    });
+
+    document.querySelectorAll("[data-close]").forEach(btn => {
+      btn.addEventListener("click", () => closeModal(btn.dataset.close));
+    });
+    document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
+      backdrop.addEventListener("click", e => {
+        if (e.target === backdrop) backdrop.classList.add("hidden");
+      });
+    });
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") {
+        document.querySelectorAll(".modal-backdrop").forEach(m => m.classList.add("hidden"));
+      }
+    });
+
+    loadCompanyUI();
+    initFilters();
+    renderEstimate();
+  </script>
+</body>
+</html>
